@@ -44,12 +44,12 @@ export default function DrawingCanvas() {
   const [isCtrlPressed, setIsCtrlPressed] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Control') {
-        setIsCtrlPressed(true);
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === 'Control') {
+  //       setIsCtrlPressed(true);
+  //     }
+  //   };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'Control') {
