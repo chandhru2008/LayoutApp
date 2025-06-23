@@ -3,7 +3,7 @@ import DrawingCanvas from './components/DrawingCanvas';
 import { PanelProvider } from './context/PanelContext';
 import { PanelIOProvider } from './context/PanelIOContext';
 import { CanvasSettingsProvider } from './context/CanvasSettingsContext';
-import Header from './components/HeaderSample';
+import Header from './components/Header';
 
 
 
