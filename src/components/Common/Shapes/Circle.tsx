@@ -12,8 +12,8 @@ const Circle = ({
 }: ShapeProps) => {
   return (
     <svg
-      width={width}
-      height={height}
+      width={width-10}
+      height={height-10}
       viewBox={`0 0 ${width} ${height}`}
       className={className}
       preserveAspectRatio="none"

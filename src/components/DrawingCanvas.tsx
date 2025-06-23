@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import Triangle from './Common/Shapes/Triangle';
-import Rectangle from './Common/Shapes/Rectangle';
 import Square from './Common/Shapes/Square';
 import Star from './Common/Shapes/Star';
 import Diamond from './Common/Shapes/Diamond';
@@ -9,29 +8,58 @@ import Circle from './Common/Shapes/Circle';
 import { Panel, usePanel } from '../context/PanelContext';
 import { useCanvasSettings } from '../context/CanvasSettingsContext';
 import Toolbar from './Toolbar';
-import Text from './Common/Shapes/Text';
 import { Rnd } from 'react-rnd';
 import { LockIcon } from 'lucide-react';
 import LeftSideBar from './LeftSidebar';
 
 
 export default function DrawingCanvas() {
+
+  const gridSize = {
+    x: 20,
+    y: 20
+  }
+
   const { theme } = useTheme();
   const {
     panels,
     removePanel,
     updatePanel,
     addDuplicatePanel,
-    addPanel
+    addPanel,
+    selectedPanel,
+    setSelectedPanel
   } = usePanel();
   const { canvasWidth, canvasHeight, roundedCorners, showGrid, canvasPositionX, canvasPositionY, canvasGradient, draggedPanel } = useCanvasSettings();
-  const {setShowPanelProperties} = usePanel();
 
-  const [singleSelectedPanel, setSingleSelectedPanel] = useState<string>('');
   const [copiedPanel, setCopiedPanel] = useState<Panel | null>(null);
   const [shiftKeyPressed, setShiftKeyPressed] = useState<boolean>(false);
   const { updatePanelSilently, undo, redo } = usePanel();
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
+
+  function getPadding(panel: Panel) {
+    if (panel.shape === 'star') {
+      if (panel.style.textAlign === 'right') {
+        return '0px 25% 0px 0px';
+      } else if (panel.style.textAlign == 'left') {
+        return '0px 0px 0px 25%';
+      } else {
+        return '0px 0px 0px 0px'
+      }
+    } else if (panel.shape === 'triangle') {
+      if (panel.style.textAlign === 'right') {
+        return '0px 25% 0px 0px';
+      } else if (panel.style.textAlign == 'left') {
+        return '0px 0px 0px 28%';
+      } else {
+        return '0px 0px 0px 0px'
+      }
+    } else if (panel.shape === 'diamond') {
+      return '20px';
+    } else {
+      return '10px'
+    }
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,10 +67,11 @@ export default function DrawingCanvas() {
       if (e.key === 'Shift') setShiftKeyPressed(true);
 
       if (e.key === 'Delete') {
-        const isPanelLocked = panels.find((p) => singleSelectedPanel === p.id)!.isLocked;
+        const isPanelLocked = panels.find((p) => selectedPanel?.id === p.id)!.isLocked;
         if (!isPanelLocked) {
-          removePanel(singleSelectedPanel);
-          setSingleSelectedPanel('');
+          if (selectedPanel)
+            removePanel(selectedPanel.id);
+          setSelectedPanel(null);
         }
       }
 
@@ -57,14 +86,14 @@ export default function DrawingCanvas() {
             e.preventDefault();
             break;
           case 'c':
-            const copied = panels.find(p => singleSelectedPanel === p.id);
+            const copied = panels.find(p => selectedPanel?.id === p.id);
             if (copied) setCopiedPanel({ ...copied });
             break;
           case 'v':
             if (copiedPanel) addDuplicatePanel(copiedPanel.id, true);
             break;
           case 'd':
-            const duplicatePanelId = panels.find(p => singleSelectedPanel === p.id)?.id;
+            const duplicatePanelId = panels.find(p => selectedPanel?.id === p.id)?.id;
             if (duplicatePanelId) addDuplicatePanel(duplicatePanelId, false);
             break;
         }
@@ -75,39 +104,33 @@ export default function DrawingCanvas() {
       if (e.key === 'Shift') setShiftKeyPressed(false);
     };
 
+
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [singleSelectedPanel, panels, copiedPanel, removePanel, addDuplicatePanel,]);
+  }, [selectedPanel, panels, copiedPanel, removePanel, addDuplicatePanel,]);
 
   const handlePanelClick = (e: React.MouseEvent, panelId: string) => {
     const panel = panels.find((p) => p.id === panelId);
     if (panel) {
-      if (panel.isLocked) {
-        setShowPanelProperties(false)
-        console.log('Selected panel : ', panel)
-      }
+      e.stopPropagation();
+      setSelectedPanel(panel);
     }
-    e.stopPropagation();
-    setSingleSelectedPanel(panelId);
-    // const panel = panels.find(p => p.id === panelId);
-    // if (!panel) return;
-    // const maxZ = Math.max(...panels.map(p => p.zIndex));
-    // updatePanel(panelId, { zIndex: maxZ + 1 });
   };
 
   const handleCanvasClick = () => {
-    setSingleSelectedPanel('');
+    setSelectedPanel(null);
   };
 
   const handleDoubleClick = (currentPanel: Panel) => {
     updatePanel(currentPanel.id, { editingEnabled: true });
   }
 
-  // const panel = panels.find((p) => singleSelectedPanel === p.id)
+
 
   const getShapeProps = (panel: Panel) => ({
     width: panel.width,
@@ -125,9 +148,9 @@ export default function DrawingCanvas() {
 
   return (
     <>
-      <div className={`container fixed top-[50px] h-full ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}  >
+      <div className={`container fixed top-[50px] h-full  ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}  >
         <LeftSideBar />
-        <div className="flex justify-center items-center h-full canvas-container" onClick={handleCanvasClick}>
+        <div className="canvas-container h-full" onClick={handleCanvasClick}>
           <div
             className={`relative border-2  transition-colors duration-200 overflow-hidden ${roundedCorners ? 'rounded-xl' : ''} 
                `}
@@ -160,15 +183,15 @@ export default function DrawingCanvas() {
               linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
               linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px)
             `,
-                  backgroundSize: '20px 20px',
+                  backgroundSize: `${gridSize.x}px ${gridSize.y}px`,
                   pointerEvents: 'none'
                 }}
               />
             )}
 
             {panels.map(panel => {
-              const isSelected = (singleSelectedPanel === panel.id && !panel.isLocked);
-              const isUnlockedAndSelected = !panel.isLocked && singleSelectedPanel === panel.id;
+              const isSelected = (selectedPanel?.id === panel.id);
+              const isUnlockedAndSelected = !panel.isLocked && selectedPanel?.id === panel.id;
               return (
 
                 <Rnd
@@ -179,6 +202,8 @@ export default function DrawingCanvas() {
                     width: panel.width,
                     height: panel.height
                   }}
+                  resizeGrid={showGrid ? [gridSize.x, gridSize.y] : undefined}
+                  dragGrid={showGrid ? [gridSize.x, gridSize.y] : undefined}
                   position={{ x: panel.x, y: panel.y }}
                   size={{ width: panel.width, height: panel.height }}
                   bounds="parent"
@@ -209,37 +234,34 @@ export default function DrawingCanvas() {
                   style={{
                     zIndex: isSelected ? 1000 : panel.zIndex,
                     transform: `rotate(${panel.rotation || 0}deg)`,
-                    border: singleSelectedPanel == panel.id ? '2px dashed #3b82f6' : 'none',
+                    border: isSelected ? '2px dashed #3b82f6' : 'none',
                     backgroundColor: 'transparent',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
                   }}
 
                   disableDragging={!isUnlockedAndSelected}
                   enableResizing={isUnlockedAndSelected}
                 >
                   <div
-                    style={{ width: '100%', height: '100%' }}
+                    style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     onDoubleClick={() => handleDoubleClick(panel)}
                   >
                     {panel.shape === 'triangle' && <Triangle {...getShapeProps(panel)} />}
-                    {panel.shape === 'rectangle' && <Rectangle {...getShapeProps(panel)} />}
                     {panel.shape === 'circle' && <Circle {...getShapeProps(panel)} />}
                     {panel.shape === 'diamond' && (
                       <Diamond
                         {...getShapeProps(panel)}
-                        width={panel.width - 20}
-                        height={panel.height - 20}
                       />
                     )}
                     {panel.shape === 'star' && <Star {...getShapeProps(panel)} />}
                     {panel.shape === 'square' && <Square {...getShapeProps(panel)} />}
-                    {panel.shape === 'text' && <Text panel={panel} {...getShapeProps(panel)} />}
+                    {panel.shape === 'text' && <div></div>}
                     {panel.editingEnabled && (
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full bg-transparent">
+                      <div className={`absolute ${panel.shape === 'triangle' ? 'top-[60%]' : 'top-1/2'} left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full bg-transparent`}>
                         <textarea
-                          onClick={(e) => {
+                          onDoubleClick={(e) => {
                             e.stopPropagation();
                             if (!panel.isLocked)
                               setIsReadOnly(false);
@@ -265,6 +287,7 @@ export default function DrawingCanvas() {
                             lineHeight: '1.2',
                             overflow: 'hidden',
                             textAlign: panel.style.textAlign || 'center',
+                            padding: `${getPadding(panel)}`
                           }}
                           spellCheck={true}
                         />
@@ -284,7 +307,7 @@ export default function DrawingCanvas() {
             })}
           </div>
         </div>
-        <Toolbar selectedPanelId={singleSelectedPanel} />
+        <Toolbar selectedPanelId={selectedPanel?.id} />
       </div>
     </>
   );

@@ -10,16 +10,19 @@ const Triangle = ({
   strokeStyle = ''
 }) => {
 
-  const pathD = `M ${width / 2} 0 L ${width} ${height} L 0 ${height} Z`;
+  const padding = 15;
+
+  const pathD = `M ${width / 2} ${padding}
+                 L ${width - padding} ${height - padding}
+                 L ${padding} ${height - padding}
+                 Z`;
 
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      width={width-10}
+      height={height-10}
       className={className}
       xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
     >
       <path
         d={pathD}

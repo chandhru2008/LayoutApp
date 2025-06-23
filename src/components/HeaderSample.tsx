@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { usePanel } from '../context/PanelContext';
-import { Menu, File, Upload, Trash2, Undo, Redo, Info, Sliders, FileText, ImageDown, ChevronDown, Grid, Plus } from 'lucide-react';
+import { Menu, File, Upload, Trash2, Undo, Redo,   FileText, ImageDown, ChevronDown, Grid, Plus, Sun, Moon } from 'lucide-react';
 import usePanelIO from '../context/PanelIOContext';
 import { useCanvasSettings } from '../context/CanvasSettingsContext';
 
 export default function Header() {
-  const { theme } = useTheme();
-  const { panels, clearPanels, undo, redo, canRedo, canUndo, addPanel, setShowPanelProperties, showPanelProperties } = usePanel();
+  const { theme, toggleTheme } = useTheme();
+  const { panels, clearPanels, undo, redo, canRedo, canUndo, addPanel} = usePanel();
   const { importConfig, exportConfig, exportToPNG } = usePanelIO();
   const { showCanvasSettings, showGrid, setShowCanvasSettings, setShowGrid } = useCanvasSettings();
   const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
   const [isShapeMenuOpen, setIsShapeMenuOpen] = useState(false);
-  const [mode, setMode] = useState('edit');
 
-  const shapes = ['circle', 'square', 'triangle', 'rectangle', 'diamond', 'star', 'text'];
+  const shapes = ['circle', 'square', 'triangle',  'diamond', 'star', 'text'];
 
   const toggleFileMenu = () => setIsFileMenuOpen(!isFileMenuOpen);
   const toggleShapeMenu = () => setIsShapeMenuOpen(!isShapeMenuOpen);
+
 
   return (
     <header
@@ -93,20 +93,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mode Selector */}
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          className={`text-sm rounded-md px-2 py-1 ${theme === 'dark'
-            ? 'bg-gray-700 border-gray-600'
-            : 'bg-gray-100 border-gray-300'
-            } border focus:outline-none focus:ring-1 ${theme === 'dark' ? 'focus:ring-gray-500' : 'focus:ring-gray-400'
-            }`}
-        >
-          <option value="edit">Edit Mode</option>
-          <option value="view">View Mode</option>
-        </select>
-
         {/* Shape Menu */}
         <div className="relative">
           <button
@@ -163,21 +149,20 @@ export default function Header() {
 
       {/* Right Section */}
       <div className="flex items-center space-x-2">
-        <button
-          onClick={() => setShowPanelProperties(!showPanelProperties)}
-          className={`p-1.5 rounded-md ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-            }`}
-          title="Settings"
-        >
-          <Sliders size={18} />
-        </button>
-        <button
-          className={`p-1.5 rounded-md ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-            }`}
-          title="Help"
-        >
-          <Info size={18} />
-        </button>
+        <div className="flex items-center gap-3">
+          {theme === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+          <span className="text-sm">Dark Mode</span>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={theme == "dark"}
+            onChange={() => toggleTheme()}
+            className="sr-only peer"
+          />
+          <div className={`w-9 h-5 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600
+                                    ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'}`}></div>
+        </label>
       </div>
     </header>
   );

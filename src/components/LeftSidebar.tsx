@@ -1,4 +1,4 @@
-import { Moon, Sun, Square, Circle, Diamond, Triangle, Star, Type, LayoutGrid, TextCursorInput, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Moon, Sun, Square, Circle, Diamond, Triangle, Star, Type, LayoutGrid, TextCursorInput, X } from 'lucide-react';
 import { useState } from 'react';
 import { usePanel } from '../context/PanelContext';
 import { useCanvasSettings } from '../context/CanvasSettingsContext';
@@ -8,7 +8,6 @@ import ColorPicker from 'react-best-gradient-color-picker';
 
 function LeftSideBar() {
     const [gradient, setGradient] = useState('linear-gradient(90deg, #4f46e5 0%, #ec4899 100%)');
-    const [showBackgroundSettings, setShowBackgroundSettings] = useState<boolean>(false);
 
 
     const { addPanel } = usePanel();
@@ -17,12 +16,10 @@ function LeftSideBar() {
     const {
         canvasWidth,
         canvasHeight,
-        canvasFgColor,
         roundedCorners,
         showGrid,
         setCanvasWidth,
         setCanvasHeight,
-        setCanvasFgColor,
         setRoundedCorners,
         setShowGrid,
         canvasPositionX,
@@ -55,7 +52,12 @@ function LeftSideBar() {
     return (
 
         showCanvasSettings && (
-            <div className={`side-bar w-[300px] h-[90%] flex flex-col gap-6 p-4 fixed top-14 left-0 z-[1000] overflow-y-auto border-r shadow-sm transition-all duration-300 ${theme === 'dark' ? 'bg-gray-900 text-white border-gray-700' : 'bg-gray-50 text-black border-gray-200'}`}>
+            <div className={`side-bar w-[300px] h-[95%] flex flex-col gap-6 p-4 fixed top-14 left-0 z-[1000] overflow-y-auto border-r shadow-sm transition-all duration-300`}
+                style={{
+                    backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+                    borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
+                    color: theme === 'dark' ? 'white' : 'black'
+                }}>
                 {/* Sidebar toggle button */}
                 <button
                     onClick={() => setShowCanvasSettings(false)}
@@ -91,7 +93,7 @@ function LeftSideBar() {
                                 draggable
                                 onDragStart={(e) => { setDraggedPanel(e.currentTarget.title); console.log(e.currentTarget.title) }}
                                 key={tool.id}
-                                className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all 
+                                className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all border border-gray-100
                                 ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-100 text-black'}`}
                                 title={tool.name}
                                 onClick={() => addPanel(tool.name.toLowerCase())}
@@ -114,25 +116,20 @@ function LeftSideBar() {
                     <div className='w-full'>
                         <div className='felx justify-between p-2 w-full' >
                             <h2 className='text-lg font-semibold mb-3 px-2 inline'>Background</h2>
-                            <div onClick={() => setShowBackgroundSettings(!showBackgroundSettings)} className='inline'>close</div>
-                        </div>
-                        {
-                            showBackgroundSettings && (
-                                <div className="space-y-2 w-[100%]">
-                                    <div className={`${theme == 'dark' ? 'bg-gray-800' : 'bg-gray-100'} p-3 rounded-md w-[100%]`}>
-                                        <ColorPicker
-                                            value={gradient}
-                                            onChange={handleGradientChange}
-                                            width={230}
-                                            height={150}
-                                            hidePresets={true}
-                                            hideInputType={true}
-                                        />
-                                    </div>
-                                </div>
-                            )
-                        }
 
+                        </div>
+                        <div className="space-y-2 w-[100%]">
+                            <div className={`${theme == 'dark' ? 'bg-gray-800' : 'bg-gray-100'} p-3 rounded-md w-[100%]`}>
+                                <ColorPicker
+                                    value={gradient}
+                                    onChange={handleGradientChange}
+                                    width={230}
+                                    height={150}
+                                    hidePresets={true}
+                                    hideInputType={true}
+                                />
+                            </div>
+                        </div>
 
                     </div>
                     <div className="space-y-4">
@@ -195,26 +192,6 @@ function LeftSideBar() {
                                         onChange={(e) => setCanvasHeight(Number(e.currentTarget.value))}
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Foreground Color */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Foreground Color</label>
-                            <div className={`flex items-center gap-2 ${theme == 'dark' ? 'bg-gray-800' : 'bg-gray-100'} p-2 rounded-md`}>
-                                <input
-                                    type="color"
-                                    value={canvasFgColor}
-                                    onChange={(e) => setCanvasFgColor(e.target.value)}
-                                    className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                                />
-                                <input
-                                    type="text"
-                                    value={canvasFgColor}
-                                    onChange={(e) => setCanvasFgColor(e.target.value)}
-                                    className={`flex-1 text-xs font-mono p-1 border rounded
-                                    ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
-                                />
                             </div>
                         </div>
 
