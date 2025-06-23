@@ -28,10 +28,10 @@ const Diamond = ({
     return (
         <div className="relative w-full h-full">
             <svg
-                width={width}
-                height={height}
+                // width={width}
+                // height={height}
                 viewBox={`0 0 ${width} ${height}`}
-                className={`${className} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
+                className={`${className} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%]`}
                 xmlns="http://www.w3.org/2000/svg"
                 preserveAspectRatio="xMidYMid meet"
                 strokeDasharray={getStrokeStyle(strokeStyle, strokeWidth)}

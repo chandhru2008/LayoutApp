@@ -13,35 +13,47 @@ import {
   AlignCenterIcon,
   AlignRightIcon,
   Star,
-  Layers,
 } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { usePanel } from '../context/PanelContext';
 import { useTheme } from '../context/ThemeContext';
 
 interface ToolbarProps {
-  selectedPanelId: string;
+  selectedPanelId: string | undefined;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
-  const { panels, updatePanel, removePanel, addDuplicatePanel, setPanels, showPanelProperties } = usePanel();
+  const { panels, updatePanel, removePanel, addDuplicatePanel, setPanels } = usePanel();
   const { theme } = useTheme();
-  const panel = panels.find(p => p.id === selectedPanelId);
-
   const [openSections, setOpenSections] = useState<string[]>(['colors', 'text', 'size', 'actions']);
   const [colorType, setColorType] = useState<'font' | 'background' | 'border' | null>(null);
   const [colorInput, setColorInput] = useState('');
 
+  const panel = panels.find(p => p.id === selectedPanelId);
+
   if (!panel) {
-    console.log(panel)
+    return ""
+  } else if (panel.isLocked) {
     return (
-      <div className={`side-bar w-80 h-full bg-white border-l border-gray-200 p-6 shadow-sm fixed top-14 right-0 z-50 ${showPanelProperties ? '' : 'hidden'}`}>
-        <div className="text-center text-gray-500 mt-20">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Layers size={24} />
+      <div
+        className={`side-bar w-80 h-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} p-6 shadow-sm fixed top-14 right-0 z-50`}
+      >
+        <div className="text-center mt-20">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+            <LockIcon size={24} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
           </div>
-          <h3 className="text-lg font-medium mb-2">No Shape Selected</h3>
-          <p className="text-sm">Select a shape to edit its properties</p>
+          <h3 className="text-lg font-medium mb-2">
+            Panel is Locked
+          </h3>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+            Unlock to move or edit the shape
+          </p>
+          <button
+            onClick={() => updatePanel(selectedPanelId!, { isLocked: false })}
+            className={`mt-4 px-4 py-2 rounded-md text-sm font-medium ${theme === 'dark' ? 'bg-red-600 hover:bg-red-700' : 'bg-red-500 hover:bg-red-600'} text-white transition-colors`}
+          >
+            Unlock Panel
+          </button>
         </div>
       </div>
     )
@@ -151,31 +163,22 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
 
   const getShapeIcon = () => {
     switch (shape) {
-      case 'text': return <TextIcon size={18} />;
-      case 'rectangle': return <RectangleVertical size={18} />;
-      case 'circle': return <CircleIcon size={18} />;
-      case 'square': return <SquareIcon size={18} />;
-      case 'diamond': return <DiamondIcon size={18} />;
-      case 'star': return <Star size={18} />;
-      default: return <SquareIcon size={18} />;
+      case 'text': return <TextIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      case 'rectangle': return <RectangleVertical size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      case 'circle': return <CircleIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      case 'square': return <SquareIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      case 'diamond': return <DiamondIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      case 'star': return <Star size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
+      default: return <SquareIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />;
     }
   };
 
   return (
     <div
-      className="side-bar fixed top-14 right-0 z-[1000] shadow-lg border-l w-80 h-screen flex flex-col transition-colors duration-200"
-      style={{
-        backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-        borderColor: theme === 'dark' ? '#374151' : '#e5e7eb'
-      }}
+      className={`side-bar fixed top-14 right-0 z-[1000] shadow-lg border-l w-80 h-[95%] flex flex-col transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-900'}`}
     >
       <div
-        className="px-4 py-3 flex justify-between items-center cursor-pointer transition-colors duration-200"
-        style={{
-          backgroundColor: theme === 'dark' ? '#111827' : '#2563eb',
-          color: '#ffffff'
-        }}
-
+        className={`px-4 py-3 flex justify-between items-center cursor-pointer transition-colors duration-200 ${theme === 'dark' ? 'border-b border-gray-700' : 'border-b border-gray-200'}`}
       >
         <div className="flex items-center gap-2">
           {getShapeIcon()}
@@ -184,27 +187,11 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
       </div>
 
       <div
-        className="absolute top-1/2 left-[-30px] pl-2 rounded-l-md cursor-pointer transition-colors duration-200"
-        style={{
-          backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
-        }}
-      >
-
-      </div>
-
-
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-4 text-sm transition-colors duration-200"
-        style={{
-          color: theme === 'dark' ? '#e5e7eb' : '#111827'
-        }}
+        className={`flex-1 overflow-y-auto p-4 space-y-4 text-sm transition-colors duration-200 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}
       >
         {/* Panel Info */}
         <div
-          className="rounded-lg p-3 mb-4 transition-colors duration-200"
-          style={{
-            backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-          }}
+          className={`rounded-lg p-3 mb-4 transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -212,14 +199,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => updatePanel(panel.id, { isLocked: !panel.isLocked })}
-                className={`p-2 rounded-md transition-colors duration-200 ${panel.isLocked
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                  : 'bg-gray-100 dark:bg-gray-600'
-                  }`}
+                onClick={() => {
+                  updatePanel(panel.id, { isLocked: !panel.isLocked })
+                }}
+                className={`p-2 rounded-md transition-colors duration-200 ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
                 title={panel.isLocked ? 'Unlock' : 'Lock'}
               >
-                {panel.isLocked ? <LockIcon size={16} /> : <UnlockIcon size={16} />}
+                {panel.isLocked ? 
+                  <LockIcon size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} /> : 
+                  <UnlockIcon size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
+                }
               </button>
             </div>
           </div>
@@ -227,20 +216,20 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
 
         {/* Colors Section */}
         <div
-          className="rounded-lg overflow-hidden transition-colors duration-200"
-          style={{
-            backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-          }}
+          className={`rounded-lg overflow-hidden transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <div
-            className="px-4 py-3 flex justify-between items-center cursor-pointer"
+            className={`px-4 py-3 flex justify-between items-center cursor-pointer ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
             onClick={() => toggleSection('colors')}
           >
             <div className="flex items-center gap-2">
-              <PaletteIcon size={18} />
+              <PaletteIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
               <span className="font-medium">Colors</span>
             </div>
-            {isOpen('colors') ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
+            {isOpen('colors') ? 
+              <ChevronUpIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} /> : 
+              <ChevronDownIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+            }
           </div>
 
           {isOpen('colors') && (
@@ -249,37 +238,25 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                 <div>
                   <button
                     onClick={() => setColorType('font')}
-                    className="w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400  flex flex-col items-center  duration-200"
-                    style={{
-                      backgroundColor: fontColor,
-                      borderColor: theme === 'dark' ? '#4b5563' : '#d1d5db'
-                    }}
+                    className={`w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400 flex flex-col items-center duration-200 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
                   >
-                    <span className="text-xs mb-1" style={{ color: getContrastColor(fontColor) }}>Text</span>
+                    <span className={`text-xs mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Text</span>
                   </button>
                 </div>
                 <div>
                   <button
                     onClick={() => setColorType('background')}
-                    className="w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400  flex flex-col items-center  duration-200"
-                    style={{
-                      backgroundColor: fillColor,
-                      borderColor: theme === 'dark' ? '#4b5563' : '#d1d5db'
-                    }}
+                    className={`w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400 flex flex-col items-center duration-200 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
                   >
-                    <span className="text-xs mb-1" style={{ color: getContrastColor(fillColor) }}>Fill</span>
+                    <span className={`text-xs mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Fill</span>
                   </button>
                 </div>
                 <div>
                   <button
                     onClick={() => setColorType('border')}
-                    className="w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400  flex flex-col items-center transition-colors duration-200"
-                    style={{
-                      backgroundColor: strokeColor,
-                      borderColor: theme === 'dark' ? '#4b5563' : '#d1d5db'
-                    }}
+                    className={`w-full py-2 px-3 rounded-md border hover:ring-2 ring-blue-400 flex flex-col items-center transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}
                   >
-                    <span className="text-xs mb-1" style={{ color: getContrastColor(strokeColor) }}>Border</span>
+                    <span className={`text-xs mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Border</span>
                   </button>
                 </div>
               </div>
@@ -312,8 +289,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                       onChange={(e) => setColorInput(e.target.value)}
                       placeholder="#hex or rgb()"
                       className={`flex-1 p-2 border rounded-md transition-colors duration-200 ${theme === 'dark'
-                        ? 'bg-gray-600 border-gray-500 text-white'
-                        : 'bg-white border-gray-300 text-black'
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-black placeholder-gray-500'
                         }`}
                     />
                     <button
@@ -328,7 +305,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                         updateStyle({ [key]: colorInput });
                         setColorInput('');
                       }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
+                      className={`px-4 py-2 rounded-md text-sm transition ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
                     >
                       Apply
                     </button>
@@ -341,20 +318,20 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
 
         {/* Text Section */}
         <div
-          className="rounded-lg overflow-hidden transition-colors duration-200"
-          style={{
-            backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-          }}
+          className={`rounded-lg overflow-hidden transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <div
-            className="px-4 py-3 flex justify-between items-center cursor-pointer"
+            className={`px-4 py-3 flex justify-between items-center cursor-pointer ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
             onClick={() => toggleSection('text')}
           >
             <div className="flex items-center gap-2">
-              <TypeIcon size={18} />
+              <TypeIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
               <span className="font-medium">Text</span>
             </div>
-            {isOpen('text') ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
+            {isOpen('text') ? 
+              <ChevronUpIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} /> : 
+              <ChevronDownIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+            }
           </div>
 
           {isOpen('text') && (
@@ -363,67 +340,85 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                 <button
                   onClick={() => updateStyle({ fontWeight: fontWeight === 'bold' ? 'normal' : 'bold' })}
                   className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center gap-2 transition-colors duration-200 ${fontWeight === 'bold'
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                    : 'bg-gray-100 dark:bg-gray-600'
+                    ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                    : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                     }`}
                 >
-                  <BoldIcon size={16} />
+                  <BoldIcon size={16} className={fontWeight === 'bold' ? 
+                    (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                    (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                  />
                 </button>
                 <button
                   onClick={() => updateStyle({ fontStyle: fontStyle === 'italic' ? 'normal' : 'italic' })}
                   className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center gap-2 transition-colors duration-200 ${fontStyle === 'italic'
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                    : 'bg-gray-100 dark:bg-gray-600'
+                    ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                    : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                     }`}
                 >
-                  <ItalicIcon size={16} />
+                  <ItalicIcon size={16} className={fontStyle === 'italic' ? 
+                    (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                    (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                  />
                 </button>
                 <button
                   onClick={() => updateStyle({ textDecoration: textDecoration === 'underline' ? 'none' : 'underline' })}
                   className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center gap-2 transition-colors duration-200 ${textDecoration === 'underline'
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                    : 'bg-gray-100 dark:bg-gray-600'
+                    ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                    : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                     }`}
                 >
-                  <UnderlineIcon size={16} />
+                  <UnderlineIcon size={16} className={textDecoration === 'underline' ? 
+                    (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                    (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                  />
                 </button>
               </div>
 
               <div className="mb-4">
-                <label className="text-sm mb-2 block">Alignment</label>
+                <label className={`text-sm mb-2 block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Alignment</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => updateStyle({ textAlign: 'left' })}
                     className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center transition-colors duration-200 ${textAlign === 'left'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                      : 'bg-gray-100 dark:bg-gray-600'
+                      ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                      : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                       }`}
                   >
-                    <AlignLeftIcon size={16} />
+                    <AlignLeftIcon size={16} className={textAlign === 'left' ? 
+                      (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                      (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                    />
                   </button>
                   <button
                     onClick={() => updateStyle({ textAlign: 'center' })}
                     className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center transition-colors duration-200 ${textAlign === 'center'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                      : 'bg-gray-100 dark:bg-gray-600'
+                      ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                      : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                       }`}
                   >
-                    <AlignCenterIcon size={16} />
+                    <AlignCenterIcon size={16} className={textAlign === 'center' ? 
+                      (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                      (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                    />
                   </button>
                   <button
                     onClick={() => updateStyle({ textAlign: 'right' })}
                     className={`flex-1 py-2 px-3 rounded-md flex justify-center items-center transition-colors duration-200 ${textAlign === 'right'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                      : 'bg-gray-100 dark:bg-gray-600'
+                      ? theme === 'dark' ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                      : theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
                       }`}
                   >
-                    <AlignRightIcon size={16} />
+                    <AlignRightIcon size={16} className={textAlign === 'right' ? 
+                      (theme === 'dark' ? 'text-blue-200' : 'text-blue-800') : 
+                      (theme === 'dark' ? 'text-gray-300' : 'text-gray-700')} 
+                    />
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm mb-1 block">Font Size</label>
+                <label className={`text-sm mb-1 block ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Font Size</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="range"
@@ -431,15 +426,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                     max={72}
                     value={fontSize}
                     onChange={(e) => updateStyle({ fontSize: +e.target.value })}
-                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
-                      }`}
+                    className={`w-full h-2 rounded-lg appearance-none cursor-pointer transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'}`}
                   />
                   <input
                     type="number"
                     value={fontSize}
                     onChange={(e) => updateStyle({ fontSize: Math.max(8, Math.min(72, +e.target.value)) })}
-                    className={`w-16 p-1 border rounded-md text-center transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-600 border-gray-500' : 'bg-white border-gray-300'
-                      }`}
+                    className={`w-16 p-1 border rounded-md text-center transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-black'}`}
                     min={8}
                     max={72}
                   />
@@ -448,15 +441,17 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
             </div>
           )}
         </div>
-        <div className="w-full space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+
+        {/* Size and Position Section */}
+        <div className={`w-full space-y-4 p-4 rounded-lg shadow-sm ${theme === 'dark' ? 'bg-gray-700' : 'bg-white'}`}>
           {/* Stroke Style Selector */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
               Border Style
             </label>
             <select
               onChange={(e) => updatePanel(panel.id, { style: { strokeStyle: e.target.value } })}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="solid">Solid</option>
               <option value="dotted">Dotted</option>
@@ -468,7 +463,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
           {/* Dimensions Input */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 Width
               </label>
               <div className="relative">
@@ -476,15 +471,15 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                   type="number"
                   value={panel.width}
                   onChange={(e) => updatePanel(panel.id, { width: Number(e.target.value) })}
-                  className="w-full p-2 pl-12 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 pl-12 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
                   min="0"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm">px</span>
+                <span className={`absolute left-3 top-2.5 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>px</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 Height
               </label>
               <div className="relative">
@@ -492,10 +487,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                   type="number"
                   value={panel.height}
                   onChange={(e) => updatePanel(panel.id, { height: Number(e.target.value) })}
-                  className="w-full p-2 pl-12 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 pl-12 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
                   min="0"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm">px</span>
+                <span className={`absolute left-3 top-2.5 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>px</span>
               </div>
             </div>
           </div>
@@ -503,7 +498,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
           {/* Position Input */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 X Position
               </label>
               <div className="relative">
@@ -511,14 +506,14 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                   type="number"
                   value={panel.x}
                   onChange={(e) => updatePanel(panel.id, { x: Number(e.target.value) })}
-                  className="w-full p-2 pl-12 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 pl-12 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm">px</span>
+                <span className={`absolute left-3 top-2.5 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>px</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                 Y Position
               </label>
               <div className="relative">
@@ -526,16 +521,16 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                   type="number"
                   value={panel.y}
                   onChange={(e) => updatePanel(panel.id, { y: Number(e.target.value) })}
-                  className="w-full p-2 pl-12 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 pl-12 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm">px</span>
+                <span className={`absolute left-3 top-2.5 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>px</span>
               </div>
             </div>
           </div>
 
           {/* Border Width Input */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
               Border Width
             </label>
             <div className="relative">
@@ -543,107 +538,100 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
                 type="number"
                 value={panel.style.strokeWidth}
                 onChange={(e) => updateStyle({ strokeWidth: Number(e.target.value) })}
-                className="w-full p-2 pl-12 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full p-2 pl-12 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
                 min="0"
               />
-              <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400 text-sm">px</span>
+              <span className={`absolute left-3 top-2.5 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>px</span>
             </div>
           </div>
         </div>
 
         {/* Layers Section */}
         <div
-          className="rounded-lg overflow-hidden transition-colors duration-200"
-          style={{
-            backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-          }}
+          className={`rounded-lg overflow-hidden transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <div
-            className="px-4 py-3 flex justify-between items-center cursor-pointer"
+            className={`px-4 py-3 flex justify-between items-center cursor-pointer ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
             onClick={() => toggleSection('layers')}
           >
             <div className="flex items-center gap-2">
-              <LayersIcon size={18} />
+              <LayersIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
               <span className="font-medium">Layer</span>
             </div>
-            {isOpen('layers') ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
+            {isOpen('layers') ? 
+              <ChevronUpIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} /> : 
+              <ChevronDownIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+            }
           </div>
 
           {isOpen('layers') && (
             <div className="px-4 pb-4 grid grid-cols-4 gap-2">
               <button
                 onClick={() => sendToBack(panel.id)}
-                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-500 duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-100'
-                  }`}
+                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 duration-200 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'}`}
                 title="Send to Back"
               >
-                <ArrowDownToLine size={16} />
-                <span className="text-xs">Back</span>
+                <ArrowDownToLine size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Back</span>
               </button>
               <button
                 onClick={() => sendBackward(panel.id)}
-                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-500  duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-100'
-                  }`}
+                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 duration-200 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'}`}
                 title="Send Backward"
               >
-                <ArrowDownIcon size={16} />
-                <span className="text-xs">Backward</span>
+                <ArrowDownIcon size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Backward</span>
               </button>
               <button
                 onClick={() => bringForward(panel.id)}
-                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-500  duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-100'
-                  }`}
+                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 duration-200 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'}`}
                 title="Bring Forward"
               >
-                <ArrowUpIcon size={16} />
-                <span className="text-xs">Forward</span>
+                <ArrowUpIcon size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Forward</span>
               </button>
               <button
                 onClick={() => bringToFront(panel.id)}
-                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 hover:bg-gray-200 dark:hover:bg-gray-500  duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-100'
-                  }`}
+                className={`py-2 px-3 rounded-md flex flex-col items-center justify-center gap-1 duration-200 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'}`}
                 title="Bring to Front"
               >
-                <ArrowUpToLine size={16} />
-                <span className="text-xs">Front</span>
+                <ArrowUpToLine size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+                <span className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Front</span>
               </button>
             </div>
           )}
         </div>
 
-
         {/* Actions Section */}
         <div
-          className="rounded-lg overflow-hidden transition-colors duration-200"
-          style={{
-            backgroundColor: theme === 'dark' ? '#374151' : '#f3f4f6'
-          }}
+          className={`rounded-lg overflow-hidden transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}
         >
           <div
-            className="px-4 py-3 flex justify-between items-center cursor-pointer"
+            className={`px-4 py-3 flex justify-between items-center cursor-pointer ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-200'}`}
             onClick={() => toggleSection('actions')}
           >
             <div className="flex items-center gap-2">
-              <SquareIcon size={18} />
+              <SquareIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
               <span className="font-medium">Actions</span>
             </div>
-            {isOpen('actions') ? <ChevronUpIcon size={18} /> : <ChevronDownIcon size={18} />}
+            {isOpen('actions') ? 
+              <ChevronUpIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} /> : 
+              <ChevronDownIcon size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+            }
           </div>
 
           {isOpen('actions') && (
             <div className="px-4 pb-4 grid grid-cols-2 gap-2">
               <button
-                onClick={() => addDuplicatePanel(selectedPanelId, false)}
-                className={`py-2 px-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-500  duration-200 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-100'
-                  }`}
+                onClick={() => addDuplicatePanel(selectedPanelId!, false)}
+                className={`py-2 px-3 rounded-md flex items-center justify-center gap-2 duration-200 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'}`}
               >
-                <CopyIcon size={16} />
-                <span>Duplicate</span>
+                <CopyIcon size={16} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} />
+                <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>Duplicate</span>
               </button>
               <button
                 onClick={() => removePanel(panel.id)}
-                className={`py-2 px-3 rounded-md flex items-center justify-center gap-2 hover:bg-red-200 dark:hover:bg-red-800   duration-200 ${theme === 'dark' ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'
-                  }`}
+                className={`py-2 px-3 rounded-md flex items-center justify-center gap-2 duration-200 ${theme === 'dark' ? 'bg-red-900 hover:bg-red-800 text-red-200' : 'bg-red-100 hover:bg-red-200 text-red-800'}`}
               >
                 <Trash2Icon size={16} />
                 <span>Delete</span>
@@ -652,23 +640,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedPanelId }) => {
           )}
         </div>
       </div>
-
     </div>
   );
 };
-
-// Helper function to determine text color based on background
-function getContrastColor(hexColor: string) {
-  // Convert hex to RGB
-  const r = parseInt(hexColor.substr(1, 2), 16);
-  const g = parseInt(hexColor.substr(3, 2), 16);
-  const b = parseInt(hexColor.substr(5, 2), 16);
-
-  // Calculate luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  // Return dark or light color based on luminance
-  return luminance > 0.5 ? '#000000' : '#ffffff';
-}
 
 export default Toolbar;

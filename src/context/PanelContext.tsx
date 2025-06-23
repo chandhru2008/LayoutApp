@@ -23,7 +23,6 @@ export interface Panel {
     height: number;
     zIndex: number;
     shape: string;
-    moveEnabled: boolean;
     editingEnabled: boolean;
     rotation: number;
     style: PanelStyle;
@@ -53,6 +52,8 @@ interface PanelContextType {
     setPanels: (newPanels: Panel[]) => void;
     showPanelProperties : boolean;
     setShowPanelProperties : (show : boolean) => void;
+    selectedPanel : Panel | null;
+    setSelectedPanel : (panel : Panel | null) => void;
 }
 
 const PanelContext = createContext<PanelContextType | undefined>(undefined);
@@ -62,6 +63,7 @@ export const PanelProvider = ({ children }: { children: React.ReactNode }) => {
     const [history, setHistory] = useState<Panel[][]>([]);
     const [future, setFuture] = useState<Panel[][]>([]);
     const [showPanelProperties, setShowPanelProperties] = useState<boolean>(false);
+    const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
 
     const pushToHistory = () => {
         setHistory(prev => [...prev, panels.map(p => ({ ...p, style: { ...p.style } }))]);
@@ -87,7 +89,6 @@ export const PanelProvider = ({ children }: { children: React.ReactNode }) => {
             height: (shape === 'text' || shape === 'rectangle') ? 100 : 400,
             zIndex: maxZIndex + 1,
             rotation: 0,
-            moveEnabled: true,
             editingEnabled: true,
             shape,
             title: `${shape}`,
@@ -219,7 +220,9 @@ export const PanelProvider = ({ children }: { children: React.ReactNode }) => {
                 canRedo: future.length > 0,
                 setPanels: setPanelsDirect,
                 showPanelProperties,
-                setShowPanelProperties
+                setShowPanelProperties,
+                selectedPanel,
+                setSelectedPanel,
             }}
         >
             {children}
